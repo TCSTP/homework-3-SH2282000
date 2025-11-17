@@ -1,14 +1,24 @@
 package tcs.app.dev.homework1
 
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import tcs.app.dev.R
 import tcs.app.dev.homework1.data.Cart
 import tcs.app.dev.homework1.data.Discount
 import tcs.app.dev.homework1.data.Shop
+import tcs.app.dev.homework1.data.minus
+import tcs.app.dev.homework1.data.plus
+import tcs.app.dev.homework1.data.update
 
 /**
  * # Homework 3 — Shop App
@@ -68,9 +78,9 @@ import tcs.app.dev.homework1.data.Shop
  *        button to return to the shop.
  *
  * - **Bottom bar**:
-*       - In Shop/Discounts, show a 2-tab bottom bar to switch between **Shop** and **Discounts**.
-*       - In Cart, hide the tab bar and instead show the cart bottom bar with the total and **Pay**
-*         action as described above.
+ *       - In Shop/Discounts, show a 2-tab bottom bar to switch between **Shop** and **Discounts**.
+ *       - In Cart, hide the tab bar and instead show the cart bottom bar with the total and **Pay**
+ *         action as described above.
  *
  * ## Hints
  * - Keep your cart as a single source of truth and derive counts/price from it.
@@ -92,6 +102,9 @@ import tcs.app.dev.homework1.data.Shop
  * - [Pager](https://developer.android.com/develop/ui/compose/layouts/pager)
  *
  */
+
+enum class ShopTab { Shop, Discounts, Cart }
+
 @Composable
 fun ShopScreen(
     shop: Shop,
@@ -99,5 +112,66 @@ fun ShopScreen(
     modifier: Modifier = Modifier
 ) {
     var cart by rememberSaveable { mutableStateOf(Cart(shop = shop)) }
+    var selectedTab by rememberSaveable { mutableStateOf(ShopTab.Shop) }
 
+    val isCartEmpty = cart.items.isEmpty() && cart.discounts.isEmpty()
+
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            ShopTopAppBar(
+                title = if (selectedTab == ShopTab.Cart) stringResource(R.string.title_cart) else stringResource(
+                    R.string.name_shop
+                ),
+                showCartIcon = selectedTab != ShopTab.Cart,
+                cartItemCount = cart.totalCount.toInt(),
+                onCartClick = { if (!isCartEmpty) selectedTab = ShopTab.Cart },
+                onBackClick = { if (selectedTab == ShopTab.Cart) selectedTab = ShopTab.Shop }
+            )
+        },
+        bottomBar = {
+            if (selectedTab != ShopTab.Cart) {
+                ShopBottomBar(
+                    selectedTab = selectedTab,
+                    onTabSelected = { selectedTab = it }
+                )
+            } else {
+                CartBottomBar(
+                    totalPrice = cart.price,
+                    enablePay = !isCartEmpty,
+                    onPay = {
+                        cart = Cart(shop = shop)
+                        selectedTab = ShopTab.Shop
+                    }
+                )
+            }
+        }
+    ) { innerPadding ->
+        // Use the padding on the container of your tab content
+        Box(modifier = Modifier.padding(innerPadding)) {
+            when (selectedTab) {
+                ShopTab.Shop -> ShopTabContent(
+                    shop = shop,
+                    cart = cart,
+                    onAdd = { item -> cart += item },
+                    modifier = Modifier.fillMaxSize() // content now respects scaffold padding
+                )
+
+                ShopTab.Discounts -> DiscountTabContent(
+                    discounts = availableDiscounts,
+                    cart = cart,
+                    onAddDiscount = { d -> cart += d },
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                ShopTab.Cart -> CartTabContent(
+                    cart = cart,
+                    onUpdateItemAmount = { item, amt -> cart = cart.update(item to amt.toUInt()) },
+                    onRemoveDiscount = { d -> cart = cart - d },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+    }
 }
+
