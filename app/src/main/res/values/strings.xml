@@ -10,7 +10,7 @@
     <string name="description_tum">Durch verantwortungsvolle Forschung, vertrauenswürdige Innovationen und weitblickende Lehr- und Weiterbildungskonzepte gestalten wir eine nachhaltige Zukunft.</string>
 
     <!-- Shop -->
-    <string name="name_shop">Example Shop</string>
+    <string name="name_shop">Shannahshop</string>
     <string name="title_cart">Checkout</string>
     <string name="title_discounts">Discounts</string>
 
@@ -28,6 +28,7 @@
     <string name="more_than_99">99+</string>
     <string name="total_price">Total: %1$s</string>
     <string name="pay_n_items_and_get">Pay %1$s %2$ss and get %3$s</string>
+    <string name="items">Items</string>
     <string name="amount_off">%1$s off!</string>
     <string name="percentage_off">%1$s%% off!</string>
 
